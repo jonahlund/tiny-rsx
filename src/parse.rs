@@ -63,11 +63,15 @@ impl Parse for Value {
 
 impl Parse for Attr {
     fn parse(input: ParseStream) -> Result<Self> {
-        Ok(Self {
-            key: input.parse()?,
-            eq_sign: input.parse()?,
-            value: input.parse()?,
-        })
+        if input.peek(LitStr) | input.peek(token::Brace) {
+            Ok(Self::Value(input.parse()?))
+        } else {
+            Ok(Self::Keyed {
+                key: input.parse()?,
+                eq_sign: input.parse()?,
+                value: input.parse()?,
+            })
+        }
     }
 }
 

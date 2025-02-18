@@ -34,10 +34,13 @@ pub enum Value {
 
 /// An HTML attribute consisting of a key and a value: `foo="bar"`.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Attr {
-    pub key: DashIdent,
-    pub eq_sign: Token![=],
-    pub value: Value,
+pub enum Attr {
+    Value(Value),
+    Keyed {
+        key: DashIdent,
+        eq_sign: Token![=],
+        value: Value,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -120,14 +123,18 @@ impl ToTokens for Value {
 impl ToTokens for Attr {
     #[inline]
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let Self {
-            key,
-            eq_sign,
-            value,
-        } = self;
-        key.to_tokens(tokens);
-        eq_sign.to_tokens(tokens);
-        value.to_tokens(tokens);
+        match self {
+            Attr::Value(value) => value.to_tokens(tokens),
+            Attr::Keyed {
+                key,
+                eq_sign,
+                value,
+            } => {
+                key.to_tokens(tokens);
+                eq_sign.to_tokens(tokens);
+                value.to_tokens(tokens);
+            }
+        }
     }
 }
 
